@@ -6,6 +6,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import mobin.shabanifar.models.getPoemsOfCategory
 import mobin.shabanifar.models.getPoetsByCentury
+import mobin.shabanifar.models.getTop8FamousPoets
 import mobin.shabanifar.models.getWorksOfPoet
 
 fun Application.configureRouting() {
@@ -83,6 +84,17 @@ fun Route.createRoute() {
 
                 // Respond with the result
                 call.respond(HttpStatusCode.OK, getWorksOfPoet)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
+            }
+        }
+
+        get("/getTop8FamousPoets") {
+            try {
+                val getTop8FamousPoets = getTop8FamousPoets()
+
+                // Respond with the result
+                call.respond(HttpStatusCode.OK, getTop8FamousPoets)
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
             }

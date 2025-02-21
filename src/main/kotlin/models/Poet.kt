@@ -46,6 +46,20 @@ fun getWorksOfPoet(poetName: String): List<Category> = transaction {
         }
 }
 
+fun getTop8FamousPoets(): List<FamousPoet> = transaction {
+    return@transaction Poet
+        .slice(Poet.id, Poet.name, Poet.description) // Select the fields you need
+        .selectAll()
+        .limit(8) // Limit the result to 8 poets
+        .map {
+            FamousPoet(
+                id = it[Poet.id],
+                name = it[Poet.name],
+                description = it[Poet.description]
+            )
+        }
+}
+
 fun extractBirthYearFromDescription(description: String?): Int? {
     if (description == null) return null
 
@@ -111,6 +125,12 @@ data class PoetWithBirthYear(
     val catId: Int?,
     val description: String?,
     val birthYear: Int?
+)
+
+data class FamousPoet(
+    val id: Int,
+    val name: String?,
+    val description: String?
 )
 
 data class Category(
