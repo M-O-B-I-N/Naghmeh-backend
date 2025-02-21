@@ -4,10 +4,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import mobin.shabanifar.models.getPoemsOfCategory
-import mobin.shabanifar.models.getPoetsByCentury
-import mobin.shabanifar.models.getTop8FamousPoets
-import mobin.shabanifar.models.getWorksOfPoet
+import mobin.shabanifar.models.*
 
 fun Application.configureRouting() {
     routing {
@@ -95,6 +92,33 @@ fun Route.createRoute() {
 
                 // Respond with the result
                 call.respond(HttpStatusCode.OK, getTop8FamousPoets)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
+            }
+        }
+
+        get("/advancedVerseSearch") {
+            try {
+                // Extract query parameters
+                val verseText = call.request.queryParameters["verseText"]
+                val poetName = call.request.queryParameters["poetName"]
+                val categoryName = call.request.queryParameters["categoryName"]
+                val excludePoetName = call.request.queryParameters["excludePoetName"]
+                val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1 // Default to page 1
+                val pageSize =
+                    call.request.queryParameters["pageSize"]?.toIntOrNull() ?: 10 // Default to 10 items per page
+
+                // Validate required query parameter
+                if (verseText == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Missing required query parameter: verseText")
+                    return@get
+                }
+
+                // Perform the advanced search
+                val result = advancedVerseSearch(verseText, poetName, categoryName, excludePoetName, page, pageSize)
+
+                // Respond with the result
+                call.respond(HttpStatusCode.OK, result)
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
             }
