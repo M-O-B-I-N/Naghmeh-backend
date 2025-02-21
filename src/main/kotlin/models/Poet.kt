@@ -1,6 +1,8 @@
 package mobin.shabanifar.models
 
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -31,6 +33,18 @@ fun getPoetsByCentury(century: Int): List<PoetWithBirthYear> = transaction {
     }
 }
 
+fun getWorksOfPoet(poetName: String): List<Category> = transaction {
+    return@transaction (Cat innerJoin Poet)
+        .slice(Cat.text, Cat.url)
+        .select {
+            (Poet.name eq poetName) and (Cat.parentId neq 0)
+        }.map {
+            Category(
+                text = it[Cat.text],
+                url = it[Cat.url]
+            )
+        }
+}
 
 fun extractBirthYearFromDescription(description: String?): Int? {
     if (description == null) return null
@@ -99,3 +113,7 @@ data class PoetWithBirthYear(
     val birthYear: Int?
 )
 
+data class Category(
+    val text: String?,
+    val url: String?
+)
