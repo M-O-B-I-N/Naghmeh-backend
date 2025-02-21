@@ -27,6 +27,6 @@ fun initDatabase() {
         driver = "org.sqlite.JDBC"
     )
     transaction {
-        SchemaUtils.create(Poet) // Create the table if it doesn't exist
+        SchemaUtils.create(Poet, Poem, Cat) // Create the table if it doesn't exist
     }
 }
