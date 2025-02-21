@@ -30,5 +30,5 @@ Before getting started, make sure you have the following installed:
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/naghmeh-backend.git
+git clone https://github.com/M-O-B-I-N/naghmeh-backend.git
 cd naghmeh-backend
