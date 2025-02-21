@@ -177,5 +177,22 @@ fun Route.createRoute() {
             call.respond(HttpStatusCode.OK, images)
         }
 
+        // Get a specific poet with its images
+        get("/poet/{poetId}/with-images") {
+            val poetId = call.parameters["poetId"]?.toIntOrNull()
+            if (poetId == null) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid poet ID")
+                return@get
+            }
+
+            val poetWithImages = getPoetWithImages(poetId)
+
+            if (poetWithImages == null) {
+                call.respond(HttpStatusCode.NotFound, "Poet not found")
+            } else {
+                call.respond(HttpStatusCode.OK, poetWithImages)
+            }
+        }
+
     }
 }
