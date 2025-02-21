@@ -11,6 +11,32 @@ object Verse : Table("verse") {
     val text = text("text").nullable()
 }
 
+fun getVersesOfPoem(poetName: String, categoryName: String, poemTitle: String): List<VerseOfPoem> = transaction {
+    // Step 1: Find the poem_id of the specified poem
+    val poemId = (Poem innerJoin Cat innerJoin Poet)
+        .slice(Poem.id)
+        .select {
+            (Poet.name eq poetName) and
+                    (Cat.text eq categoryName) and
+                    (Poem.title eq poemTitle)
+        }
+        .singleOrNull()?.get(Poem.id)
+        ?: return@transaction emptyList() // Return an empty list if the poem is not found
+
+    // Step 2: Fetch the verses of the specified poem
+    return@transaction Verse
+        .select { Verse.poemId eq poemId }
+        .orderBy(Verse.vorder)
+        .map {
+            VerseOfPoem(
+                poemId = it[Verse.poemId],
+                vorder = it[Verse.vorder],
+                position = it[Verse.position],
+                text = it[Verse.text]
+            )
+        }
+}
+
 fun advancedVerseSearch(
     verseText: String,
     poetName: String? = null, // Optional: Filter by poet name
@@ -104,4 +130,11 @@ data class VerseWithContext(
 data class PaginatedResponse(
     val results: List<AdvancedVerseSearchResponse>,
     val totalCount: Long
+)
+
+data class VerseOfPoem(
+    val poemId: Int,
+    val vorder: Int,
+    val position: Int,
+    val text: String?
 )

@@ -124,5 +124,31 @@ fun Route.createRoute() {
             }
         }
 
+        get("/getVersesOfPoem") {
+            try {
+                // Extract query parameters
+                val poetName = call.request.queryParameters["poetName"]
+                val categoryName = call.request.queryParameters["categoryName"]
+                val poemTitle = call.request.queryParameters["poemTitle"]
+
+                // Validate query parameters
+                if (poetName == null || categoryName == null || poemTitle == null) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        "Missing query parameters: poetName, categoryName, and poemTitle are required"
+                    )
+                    return@get
+                }
+
+                // Fetch the verses of the specified poem
+                val verses = getVersesOfPoem(poetName, categoryName, poemTitle)
+
+                // Respond with the verses
+                call.respond(HttpStatusCode.OK, verses)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
+            }
+        }
+
     }
 }
