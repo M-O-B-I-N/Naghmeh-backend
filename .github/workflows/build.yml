@@ -1,0 +1,37 @@
+name: Kotlin Build
+
+# Trigger the workflow on push or pull request to the main branch
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
+
+# Define the jobs to run
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Java (Kotlin runs on the JVM)
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21' # Use the appropriate JDK version for your project
+          distribution: 'temurin'
+
+      # Grant execute permission for gradlew (if applicable)
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # Build the project using Gradle
+      - name: Build with Gradle
+        run: ./gradlew build
