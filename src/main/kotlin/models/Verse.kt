@@ -37,6 +37,70 @@ fun getVersesOfPoem(poetName: String, categoryName: String, poemTitle: String): 
         }
 }
 
+fun getRandomVerse(): RandomVerse = transaction {
+    // Step 1: Select a random verse with position 0
+    val firstVerse = Verse
+        .slice(Verse.text, Verse.poemId, Verse.vorder)
+        .select { Verse.position eq 0 }
+        .orderBy(Random())
+        .limit(1)
+        .map {
+            Triple(
+                it[Verse.text] ?: "",
+                it[Verse.poemId],
+                it[Verse.vorder]
+            )
+        }.firstOrNull() ?: throw IllegalStateException("No verse found in the database.")
+
+
+
+    val (firstVerseText, poemId , firstVerseVorder ) = firstVerse
+
+    // Step 2: Select the next verse with position 1 from the same poem
+    val secondVerseText = Verse
+        .slice(Verse.text)
+        .select {
+            (Verse.poemId eq poemId) and
+                    (Verse.vorder eq firstVerseVorder + 1) // Next Vorder
+        }
+        .map { it[Verse.text] ?: "" }
+        .firstOrNull() ?: throw IllegalStateException("No matching verse found for poem ID $poemId.")
+
+    // Step 3: Fetch the poem and poet details
+    val poemWithPoet = (Poem innerJoin Cat innerJoin Poet)
+        .slice(Poem.id, Poem.title, Poet.name, Poet.id)
+        .select { Poem.id eq poemId }
+        .map {
+            Triple(
+                it[Poem.title],
+                it[Poet.name],
+                it[Poet.id]
+            )
+        }.firstOrNull() ?: throw IllegalStateException("No poem or poet found for poem ID $poemId.")
+
+
+
+    val (poemTitle, poetName, poetId) = poemWithPoet
+
+    // Step 4: Return the result in the RandomVerse data class
+    return@transaction RandomVerse(
+        verses = listOf(firstVerseText, secondVerseText),
+        poemId = poemId,
+        poemTitle = poemTitle,
+        poetName = poetName,
+        poetId = poetId
+    )
+}
+
+// Data class to hold the result
+data class RandomVerse(
+    val verses: List<String>,
+    val poemId: Int,
+    val poemTitle: String,
+    val poetName: String,
+    val poetId: Int
+)
+
 fun advancedVerseSearch(
     verseText: String,
     poetName: String? = null, // Optional: Filter by poet name
@@ -65,7 +129,7 @@ fun advancedVerseSearch(
         .orderBy(Verse.poemId to SortOrder.ASC, Verse.vorder to SortOrder.ASC)
 
     // Step 2: Count the total number of matching verses
-    val totalCount : Long = verseQuery.count()
+    val totalCount: Long = verseQuery.count()
 
     // Step 3: Apply pagination
     val paginatedVerses = verseQuery
@@ -105,7 +169,7 @@ fun advancedVerseSearch(
             poemTitle = verseRow[Poem.title],
             matchedVerse = VerseWithContext(
                 previousVerse = previousVerse,
-                matchedVerse = verseRow[Verse.text]?: "",
+                matchedVerse = verseRow[Verse.text] ?: "",
                 nextVerse = nextVerse
             )
         )
@@ -127,6 +191,7 @@ data class VerseWithContext(
     val matchedVerse: String?, // Allow null
     val nextVerse: String?
 )
+
 data class PaginatedResponse(
     val results: List<AdvancedVerseSearchResponse>,
     val totalCount: Long

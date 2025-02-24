@@ -67,6 +67,18 @@ fun Route.createRoute() {
             }
         }
 
+        get("/getRandomVerse") {
+            try {
+                // Fetch a random verse
+                val randomVerse =  getRandomVerse()
+
+                // Respond with the result
+                call.respond(HttpStatusCode.OK, randomVerse)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
+            }
+        }
+
         get("/getWorksOfPoet") {
             try {
                 // Extract query parameter
