@@ -1,7 +1,6 @@
 package mobin.shabanifar
 
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
@@ -9,12 +8,6 @@ import kotlinx.coroutines.withContext
 import mobin.shabanifar.models.*
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-
-fun Application.configureRouting() {
-    routing {
-        createRoute()
-    }
-}
 
 fun Route.createRoute() {
     route("/api") {
