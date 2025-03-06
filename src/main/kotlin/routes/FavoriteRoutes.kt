@@ -11,7 +11,7 @@ import mobin.shabanifar.utils.CustomException
 import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Route.favoriteRoutes(favoriteService: FavoriteService) {
-    route("/api") {
+    route("/api/favorite") {
         post("/saveFavoritePoem") {
             try {
                 // Parse the request body

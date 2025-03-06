@@ -1,5 +1,6 @@
 package mobin.shabanifar.models
 
+import mobin.shabanifar.models.poet.Poet
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
