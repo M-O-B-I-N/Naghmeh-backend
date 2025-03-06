@@ -1,5 +1,6 @@
 package mobin.shabanifar.models
 
+import mobin.shabanifar.models.poet.Poet
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.Collections.emptyList
