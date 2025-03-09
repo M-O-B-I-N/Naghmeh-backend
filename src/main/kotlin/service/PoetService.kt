@@ -1,8 +1,6 @@
 package mobin.shabanifar.service
 
-import mobin.shabanifar.models.poet.Category
-import mobin.shabanifar.models.poet.FamousPoet
-import mobin.shabanifar.models.poet.PoetWithBirthYear
+import mobin.shabanifar.models.poet.*
 import mobin.shabanifar.repository.PoetRepository
 
 
@@ -18,6 +16,14 @@ class PoetService(private val poetRepository: PoetRepository) {
 
     fun getTop8FamousPoets(): List<FamousPoet>{
         return poetRepository.getTop8FamousPoets()
+    }
+
+    fun getPoetWithImages(poetId: Int) : PoetWithImagesResponse? {
+        return poetRepository.getPoetWithImages(poetId)
+    }
+
+    fun getPoetImages(poetId: Int) : PoetImageResponse {
+        return poetRepository.getPoetImages(poetId)
     }
 
 }

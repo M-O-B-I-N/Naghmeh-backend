@@ -1,10 +1,7 @@
 package mobin.shabanifar.repository
 
 import mobin.shabanifar.models.Cat
-import mobin.shabanifar.models.poet.Category
-import mobin.shabanifar.models.poet.FamousPoet
-import mobin.shabanifar.models.poet.Poet
-import mobin.shabanifar.models.poet.PoetWithBirthYear
+import mobin.shabanifar.models.poet.*
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
@@ -53,6 +50,37 @@ class PoetRepository {
                     description = it[Poet.description]
                 )
             }
+    }
+
+    fun getPoetImages(poetId: Int): PoetImageResponse {
+        val urls = transaction {
+            PoetImage.select { PoetImage.poetId eq poetId }.map {
+                it[PoetImage.url]
+            }
+        }
+        return PoetImageResponse(url = urls)
+    }
+
+    fun getPoetWithImages(poetId: Int): PoetWithImagesResponse? {
+        return transaction {
+            // Fetch the poem
+            val poet = Poet.select { Poet.id eq poetId }.singleOrNull() ?: return@transaction null
+
+            // Fetch the poet's images
+            val images = PoetImage.select { PoetImage.poetId eq poet[Poet.id] }.map { it[PoetImage.url] }
+
+            // Fetch the poet's name
+            val poetName = Poet.select { Poet.id eq poetId }.singleOrNull()?.get(Poet.name)
+                ?: "Unknown Poet"
+
+            // Construct the response
+            PoetWithImagesResponse(
+                poetId = poet[Poet.id],
+                poetName = poetName,
+                description = poet[Poet.description],
+                images = images
+            )
+        }
     }
 
 }

@@ -7,6 +7,7 @@ import io.ktor.server.routing.*
 import mobin.shabanifar.models.*
 import mobin.shabanifar.models.favorite.Favorite
 import mobin.shabanifar.models.poet.Poet
+import mobin.shabanifar.models.poet.PoetImage
 import mobin.shabanifar.plugins.configureSerialization
 import mobin.shabanifar.repository.FavoriteRepository
 import mobin.shabanifar.repository.PoetRepository

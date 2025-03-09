@@ -3,11 +3,10 @@ package mobin.shabanifar
 import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import mobin.shabanifar.models.*
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
+import mobin.shabanifar.models.advancedVerseSearch
+import mobin.shabanifar.models.getPoemsOfCategory
+import mobin.shabanifar.models.getRandomVerse
+import mobin.shabanifar.models.getVersesOfPoem
 
 fun Route.createRoute() {
     route("/api") {
@@ -39,7 +38,7 @@ fun Route.createRoute() {
         get("/getRandomVerse") {
             try {
                 // Fetch a random verse
-                val randomVerse =  getRandomVerse()
+                val randomVerse = getRandomVerse()
 
                 // Respond with the result
                 call.respond(HttpStatusCode.OK, randomVerse)
@@ -100,46 +99,5 @@ fun Route.createRoute() {
                 call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
             }
         }
-
-        // Get all images for a specific poet
-        get("/poet/{poetId}/images") {
-            val poetId = call.parameters["poetId"]?.toIntOrNull()
-            if (poetId == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid poet ID")
-                return@get
-            }
-
-            val images = withContext(Dispatchers.IO) {
-                transaction {
-                    PoetImage.select { PoetImage.poetId eq poetId }.map {
-                        PoetImageResponse(
-                            id = it[PoetImage.id],
-                            poetId = it[PoetImage.poetId],
-                            url = it[PoetImage.url]
-                        )
-                    }
-                }
-            }
-
-            call.respond(HttpStatusCode.OK, images)
-        }
-
-        // Get a specific poet with its images
-        get("/poet/{poetId}/with-images") {
-            val poetId = call.parameters["poetId"]?.toIntOrNull()
-            if (poetId == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid poet ID")
-                return@get
-            }
-
-            val poetWithImages = getPoetWithImages(poetId)
-
-            if (poetWithImages == null) {
-                call.respond(HttpStatusCode.NotFound, "Poet not found")
-            } else {
-                call.respond(HttpStatusCode.OK, poetWithImages)
-            }
-        }
-
     }
 }
