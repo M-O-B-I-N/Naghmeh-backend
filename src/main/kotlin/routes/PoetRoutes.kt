@@ -65,5 +65,35 @@ fun Route.poetRoutes(poetService: PoetService) {
                 call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
             }
         }
+
+        // Get all images for a specific poet
+        get("/{poetId}/images") {
+            val poetId = call.parameters["poetId"]?.toIntOrNull()
+            if (poetId == null) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid poet ID")
+                return@get
+            }
+
+            val images = poetService.getPoetImages(poetId)
+
+            call.respond(HttpStatusCode.OK, images)
+        }
+
+        // Get a specific poet with its images
+        get("/{poetId}/with-images") {
+            val poetId = call.parameters["poetId"]?.toIntOrNull()
+            if (poetId == null) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid poet ID")
+                return@get
+            }
+
+            val poetWithImages = poetService.getPoetWithImages(poetId)
+
+            if (poetWithImages == null) {
+                call.respond(HttpStatusCode.NotFound, "Poet not found")
+            } else {
+                call.respond(HttpStatusCode.OK, poetWithImages)
+            }
+        }
     }
 }
