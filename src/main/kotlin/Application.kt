@@ -8,13 +8,17 @@ import mobin.shabanifar.models.*
 import mobin.shabanifar.models.favorite.Favorite
 import mobin.shabanifar.models.poet.Poet
 import mobin.shabanifar.models.poet.PoetImage
+import mobin.shabanifar.models.verse.Verse
 import mobin.shabanifar.plugins.configureSerialization
 import mobin.shabanifar.repository.FavoriteRepository
 import mobin.shabanifar.repository.PoetRepository
+import mobin.shabanifar.repository.VerseRepository
 import mobin.shabanifar.routes.favoriteRoutes
 import mobin.shabanifar.routes.poetRoutes
+import mobin.shabanifar.routes.verseRoutes
 import mobin.shabanifar.service.FavoriteService
 import mobin.shabanifar.service.PoetService
+import mobin.shabanifar.service.VerseService
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -30,11 +34,14 @@ fun Application.module() {
     val favoriteService = FavoriteService(favoriteRepository)
     val poetRepository = PoetRepository()
     val poetService = PoetService(poetRepository)
+    val verseRepository = VerseRepository()
+    val verseService = VerseService(verseRepository)
 
     routing {
         createRoute()
         favoriteRoutes(favoriteService)
         poetRoutes(poetService)
+        verseRoutes(verseService)
     }
 }
 
