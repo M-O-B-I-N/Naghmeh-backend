@@ -1,6 +1,7 @@
 package mobin.shabanifar.service
 
-import mobin.shabanifar.models.verse.PaginatedResponse
+import mobin.shabanifar.models.common.PaginatedResponse
+import mobin.shabanifar.models.verse.AdvancedVerseSearchResponse
 import mobin.shabanifar.models.verse.RandomVerse
 import mobin.shabanifar.models.verse.VerseOfPoem
 import mobin.shabanifar.repository.VerseRepository
@@ -14,7 +15,7 @@ class VerseService(private val repository: VerseRepository) {
         excludePoetName: String?,
         page: Int,
         pageSize: Int
-    ): PaginatedResponse {
+    ): PaginatedResponse<AdvancedVerseSearchResponse> {
         return repository.advancedVerseSearch(
             verseText = verseText,
             poetName = poetName,

@@ -1,6 +1,6 @@
 package mobin.shabanifar.models.verse
 
-import mobin.shabanifar.models.Poem
+import mobin.shabanifar.models.poem.Poem
 import org.jetbrains.exposed.sql.Table
 
 object Verse : Table("verse") {

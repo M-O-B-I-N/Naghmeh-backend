@@ -1,7 +1,8 @@
 package mobin.shabanifar.repository
 
 import mobin.shabanifar.models.Cat
-import mobin.shabanifar.models.Poem
+import mobin.shabanifar.models.common.PaginatedResponse
+import mobin.shabanifar.models.poem.Poem
 import mobin.shabanifar.models.poet.Poet
 import mobin.shabanifar.models.verse.*
 import org.jetbrains.exposed.sql.*
@@ -98,7 +99,7 @@ class VerseRepository {
         excludePoetName: String? = null, // Optional: Exclude a specific poet
         page: Int = 1, // Default to page 1
         pageSize: Int = 10 // Default to 10 items per page
-    ): PaginatedResponse = transaction {
+    ): PaginatedResponse<AdvancedVerseSearchResponse> = transaction {
         // Step 1: Find verses that match the given text and optional filters
         val verseQuery = Verse
             .innerJoin(Poem).innerJoin(Cat).innerJoin(Poet)
