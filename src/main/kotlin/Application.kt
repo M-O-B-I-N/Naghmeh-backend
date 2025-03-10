@@ -4,19 +4,23 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.routing.*
-import mobin.shabanifar.models.*
+import mobin.shabanifar.models.Cat
 import mobin.shabanifar.models.favorite.Favorite
+import mobin.shabanifar.models.poem.Poem
 import mobin.shabanifar.models.poet.Poet
 import mobin.shabanifar.models.poet.PoetImage
 import mobin.shabanifar.models.verse.Verse
 import mobin.shabanifar.plugins.configureSerialization
 import mobin.shabanifar.repository.FavoriteRepository
+import mobin.shabanifar.repository.PoemRepository
 import mobin.shabanifar.repository.PoetRepository
 import mobin.shabanifar.repository.VerseRepository
 import mobin.shabanifar.routes.favoriteRoutes
+import mobin.shabanifar.routes.poemRoutes
 import mobin.shabanifar.routes.poetRoutes
 import mobin.shabanifar.routes.verseRoutes
 import mobin.shabanifar.service.FavoriteService
+import mobin.shabanifar.service.PoemService
 import mobin.shabanifar.service.PoetService
 import mobin.shabanifar.service.VerseService
 import org.jetbrains.exposed.sql.Database
@@ -36,12 +40,14 @@ fun Application.module() {
     val poetService = PoetService(poetRepository)
     val verseRepository = VerseRepository()
     val verseService = VerseService(verseRepository)
+    val poemRepository = PoemRepository()
+    val poemService = PoemService(poemRepository)
 
     routing {
-        createRoute()
         favoriteRoutes(favoriteService)
         poetRoutes(poetService)
         verseRoutes(verseService)
+        poemRoutes(poemService)
     }
 }
 

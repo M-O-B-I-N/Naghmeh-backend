@@ -1,7 +1,7 @@
 package mobin.shabanifar.repository
 
-import mobin.shabanifar.models.Poem
 import mobin.shabanifar.models.favorite.Favorite
+import mobin.shabanifar.models.poem.Poem
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 
