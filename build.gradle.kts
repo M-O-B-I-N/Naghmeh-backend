@@ -19,6 +19,8 @@ repositories {
 }
 
 dependencies {
+    implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.server.core.jvm)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.logback.classic)
@@ -34,6 +36,12 @@ dependencies {
     implementation(libs.server.content.negotiation.jvm)
     implementation(libs.apache)
     implementation(libs.translate)
+
+    //Auth
+    implementation(libs.h2database)
+    implementation(libs.ktor.auth.jwt)
+    implementation(libs.ktor.auth)
+    implementation(libs.jbcrypt)
 
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.ktor.server.test.host)
