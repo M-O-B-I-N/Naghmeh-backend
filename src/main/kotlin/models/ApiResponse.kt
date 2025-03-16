@@ -1,10 +1,27 @@
 package mobin.shabanifar.models
 
-import com.google.gson.annotations.SerializedName
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
 
-data class ApiResponse<T>(
-    @SerializedName("message") val message: String? = null,
-    @SerializedName("data") val data: T? = null,
-    @SerializedName("statusCode") val statusCode: HttpStatusCode,
-)
+sealed class ApiResponse<T>(
+    val data: T? = null,
+    val message: String? = null,
+    val status: HttpStatusCode
+) {
+    class Success<T>(
+        data: T? = null,
+        status: HttpStatusCode = HttpStatusCode.OK
+    ) : ApiResponse<T>(data, null, status)
+
+    class Error<T>(
+        message: String,
+        status: HttpStatusCode = HttpStatusCode.BadRequest,
+        data: T? = null
+    ) : ApiResponse<T>(data, message, status)
+}
+
+suspend inline fun <reified T> ApplicationCall.respondApi(response: ApiResponse<T>) {
+    val responseBody = mapOf("data" to response.data, "message" to response.message).filterValues { it != null }
+    respond(response.status, responseBody)
+}

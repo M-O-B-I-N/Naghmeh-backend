@@ -2,9 +2,10 @@ package mobin.shabanifar.routes
 
 import io.ktor.http.*
 import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import mobin.shabanifar.models.ApiResponse
 import mobin.shabanifar.models.favorite.SaveFavoritePoemRequest
+import mobin.shabanifar.models.respondApi
 import mobin.shabanifar.service.FavoriteService
 import mobin.shabanifar.utils.CustomException
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -21,14 +22,29 @@ fun Route.favoriteRoutes(favoriteService: FavoriteService) {
                     transaction {
                         favoriteService.saveFavoritePoem(poemId)
                     }
-                    call.respond(HttpStatusCode.OK, "Poem saved as favorite")
+                    call.respondApi(ApiResponse.Success<Unit>(status = HttpStatusCode.OK))
                 } else {
-                    call.respond(HttpStatusCode.BadRequest, "'poemId' parameter cannot be null")
+                    call.respondApi(
+                        ApiResponse.Error<Unit>(
+                            status = HttpStatusCode.BadRequest,
+                            message = "'poemId' parameter cannot be null"
+                        )
+                    )
                 }
             } catch (e: CustomException) {
-                call.respond(e.statusCode, e.message ?: "An error occurred")
+                call.respondApi(
+                    ApiResponse.Error<Unit>(
+                        status = e.statusCode,
+                        message = e.message ?: "An error occurred"
+                    )
+                )
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
+                call.respondApi(
+                    ApiResponse.Error<Unit>(
+                        status = HttpStatusCode.InternalServerError,
+                        message = "An error occurred: ${e.message}"
+                    )
+                )
             }
         }
     }

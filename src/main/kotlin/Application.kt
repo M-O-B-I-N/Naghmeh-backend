@@ -29,14 +29,6 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
 fun main() {
-    /*val resourcePath = "application.conf"
-    val fileUrl = object {}.javaClass.classLoader.getResource(resourcePath)
-    if (fileUrl != null) {
-        val filePath = fileUrl.path
-        println("File Path: $filePath")
-    } else {
-        println("File not found in resources: $resourcePath")
-    }*/
     initDatabase()
     embeddedServer(Netty, port = 2003, host = "localhost", module = Application::module).start(wait = true)
 }
@@ -108,16 +100,6 @@ fun Application.configureSecurity() {
 
 fun Application.configureStatusPages() {
     install(StatusPages) {
-        // Handle 401 Unauthorized
-        status(HttpStatusCode.Unauthorized) { call, status ->
-            call.respond(status, "Unauthorized: Token is missing or invalid")
-        }
-
-        // Handle 404 Not Found
-        status(HttpStatusCode.NotFound) { call, status ->
-            call.respond(status, "Not Found: The requested resource does not exist")
-        }
-
         // Handle exceptions
         exception<Throwable> { call, cause ->
             call.respond(HttpStatusCode.InternalServerError, "Internal Server Error: ${cause.message}")

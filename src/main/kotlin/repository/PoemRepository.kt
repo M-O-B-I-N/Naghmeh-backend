@@ -1,5 +1,6 @@
 package mobin.shabanifar.repository
 
+import mobin.shabanifar.models.ApiResponse
 import mobin.shabanifar.models.Cat
 import mobin.shabanifar.models.common.PaginatedResponse
 import mobin.shabanifar.models.poem.Poem
@@ -16,7 +17,7 @@ class PoemRepository {
         categoryName: String,
         page: Int,
         pageSize: Int
-    ): PaginatedResponse<PoemsOfCategoryResponse> = transaction {
+    ): ApiResponse<PaginatedResponse<PoemsOfCategoryResponse>> = transaction {
         val poemQuery = Poem.innerJoin(Cat).innerJoin(Poet)
             .slice(Poem.id, Poem.title, Poem.url)
             .select {
@@ -32,7 +33,7 @@ class PoemRepository {
 
         // If no verses match, return an empty response
         if (paginatedPoems.isEmpty()) {
-            return@transaction PaginatedResponse(Collections.emptyList(), totalCount)
+            return@transaction ApiResponse.Success(PaginatedResponse(Collections.emptyList(), totalCount))
         }
 
         val results = paginatedPoems.map {
@@ -43,7 +44,7 @@ class PoemRepository {
             )
         }
 
-        return@transaction PaginatedResponse(results,totalCount)
+        return@transaction ApiResponse.Success(PaginatedResponse(results, totalCount))
     }
 
 }

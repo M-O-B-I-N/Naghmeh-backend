@@ -1,8 +1,9 @@
 package mobin.shabanifar.routes
 
 import io.ktor.http.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import mobin.shabanifar.models.ApiResponse
+import mobin.shabanifar.models.respondApi
 import mobin.shabanifar.service.PoemService
 
 fun Route.poemRoutes(service: PoemService) {
@@ -17,25 +18,32 @@ fun Route.poemRoutes(service: PoemService) {
 
                 // Validate query parameters
                 if (poetName == null || categoryName == null) {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        "Missing query parameters: poetName and categoryName are required"
+                    call.respondApi(
+                        ApiResponse.Error<Unit>(
+                            status = HttpStatusCode.BadRequest,
+                            message = "Missing query parameters: poetName and categoryName are required"
+                        )
                     )
                     return@get
                 }
 
                 // Fetch poems of the specified category for the poet
                 val poemsOfCategory = service.getPoemsOfCategory(
-                    poetName =poetName,
+                    poetName = poetName,
                     categoryName = categoryName,
                     page = page,
                     pageSize = pageSize
                 )
 
                 // Respond with the result
-                call.respond(HttpStatusCode.OK, poemsOfCategory)
+                call.respondApi(poemsOfCategory)
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
+                call.respondApi(
+                    ApiResponse.Error<Unit>(
+                        status = HttpStatusCode.InternalServerError,
+                        message = "An error occurred: ${e.message}"
+                    )
+                )
             }
         }
 

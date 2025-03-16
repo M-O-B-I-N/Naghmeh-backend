@@ -42,7 +42,7 @@ class AuthenticateRepository {
                 .withIssuer(jwtIssuer)
                 .withClaim("email", authenticateRequest.email)
                 .sign(Algorithm.HMAC256(jwtSecret))
-            return ApiResponse(statusCode = HttpStatusCode.Created, data = AuthenticateResponse(token))
+            return ApiResponse.Success(status = HttpStatusCode.Created, data = AuthenticateResponse(token))
 
         } else {
 
@@ -53,9 +53,9 @@ class AuthenticateRepository {
                     .withIssuer(jwtIssuer)
                     .withClaim("email", authenticateRequest.email)
                     .sign(Algorithm.HMAC256(jwtSecret))
-                ApiResponse(statusCode = HttpStatusCode.OK, data = AuthenticateResponse(token))
+                ApiResponse.Success(data = AuthenticateResponse(token))
             } else {
-                ApiResponse(statusCode = HttpStatusCode.Unauthorized, message = "Password is incorrect!")
+                ApiResponse.Error(status = HttpStatusCode.Unauthorized, message = "Password is incorrect!")
             }
         }
     }
