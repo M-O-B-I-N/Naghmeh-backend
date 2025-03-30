@@ -1,8 +1,9 @@
 package mobin.shabanifar.routes
 
 import io.ktor.http.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import mobin.shabanifar.models.ApiResponse
+import mobin.shabanifar.models.respondApi
 import mobin.shabanifar.service.PoetService
 
 fun Route.poetRoutes(poetService: PoetService) {
@@ -15,9 +16,11 @@ fun Route.poetRoutes(poetService: PoetService) {
 
                 // Validate query parameter
                 if (century == null) {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        "Missing or invalid query parameter: 'century' must be a valid integer"
+                    call.respondApi(
+                        ApiResponse.Error<Unit>(
+                            status = HttpStatusCode.BadRequest,
+                            message = "Missing or invalid query parameter: 'century' must be a valid integer"
+                        )
                     )
                     return@get
                 }
@@ -26,20 +29,28 @@ fun Route.poetRoutes(poetService: PoetService) {
                 val poetsByCentury = poetService.getPoetsByCentury(century)
 
                 // Respond with the result
-                call.respond(HttpStatusCode.OK, poetsByCentury)
+                call.respondApi(poetsByCentury)
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
+                call.respondApi(
+                    ApiResponse.Error<Unit>(
+                        status = HttpStatusCode.InternalServerError,
+                        message = "An error occurred: ${e.message}"
+                    )
+                )
             }
         }
 
         get("/getTop8FamousPoets") {
             try {
                 val getTop8FamousPoets = poetService.getTop8FamousPoets()
-
-                // Respond with the result
-                call.respond(HttpStatusCode.OK, getTop8FamousPoets)
+                call.respondApi(getTop8FamousPoets)
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
+                call.respondApi(
+                    ApiResponse.Error<Unit>(
+                        status = HttpStatusCode.InternalServerError,
+                        message = "An error occurred: ${e.message}"
+                    )
+                )
             }
         }
 
@@ -50,9 +61,11 @@ fun Route.poetRoutes(poetService: PoetService) {
 
                 // Validate query parameter
                 if (poetName == null) {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        "Missing or invalid query parameter: 'poetName' must be a valid string"
+                    call.respondApi(
+                        ApiResponse.Error<Unit>(
+                            status = HttpStatusCode.BadRequest,
+                            message = "Missing or invalid query parameter: 'poetName' must be a valid string"
+                        )
                     )
                     return@get
                 }
@@ -60,9 +73,14 @@ fun Route.poetRoutes(poetService: PoetService) {
                 val getWorksOfPoet = poetService.getWorksOfPoet(poetName)
 
                 // Respond with the result
-                call.respond(HttpStatusCode.OK, getWorksOfPoet)
+                call.respondApi(getWorksOfPoet)
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, "An error occurred: ${e.message}")
+                call.respondApi(
+                    ApiResponse.Error<Unit>(
+                        status = HttpStatusCode.InternalServerError,
+                        message = "An error occurred: ${e.message}"
+                    )
+                )
             }
         }
 
@@ -70,30 +88,36 @@ fun Route.poetRoutes(poetService: PoetService) {
         get("/{poetId}/images") {
             val poetId = call.parameters["poetId"]?.toIntOrNull()
             if (poetId == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid poet ID")
+                call.respondApi(
+                    ApiResponse.Error<Unit>(
+                        status = HttpStatusCode.BadRequest,
+                        message = "Invalid poet ID"
+                    )
+                )
                 return@get
             }
 
             val images = poetService.getPoetImages(poetId)
 
-            call.respond(HttpStatusCode.OK, images)
+            call.respondApi(images)
         }
 
         // Get a specific poet with its images
         get("/{poetId}/with-images") {
             val poetId = call.parameters["poetId"]?.toIntOrNull()
             if (poetId == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid poet ID")
+                call.respondApi(
+                    ApiResponse.Error<Unit>(
+                        status = HttpStatusCode.BadRequest,
+                        message = "Invalid poet ID"
+                    )
+                )
                 return@get
             }
 
             val poetWithImages = poetService.getPoetWithImages(poetId)
 
-            if (poetWithImages == null) {
-                call.respond(HttpStatusCode.NotFound, "Poet not found")
-            } else {
-                call.respond(HttpStatusCode.OK, poetWithImages)
-            }
+            call.respondApi(poetWithImages)
         }
     }
 }

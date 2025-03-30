@@ -1,5 +1,7 @@
 package mobin.shabanifar.repository
 
+import io.ktor.http.*
+import mobin.shabanifar.models.ApiResponse
 import mobin.shabanifar.models.Cat
 import mobin.shabanifar.models.poet.*
 import org.jetbrains.exposed.sql.and
@@ -9,8 +11,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 class PoetRepository {
 
-    fun getPoetsByCentury(century: Int): List<PoetWithBirthYear?> = transaction {
-        return@transaction Poet.selectAll().mapNotNull {
+    fun getPoetsByCentury(century: Int): ApiResponse<List<PoetWithBirthYear?>> = transaction {
+        val response = Poet.selectAll().mapNotNull {
             if (it[Poet.birthYearInLHijri] != null && ((it[Poet.birthYearInLHijri]?.div(100) ?: 0) + 1) == century) {
                 PoetWithBirthYear(
                     id = it[Poet.id],
@@ -23,10 +25,11 @@ class PoetRepository {
                 null
             }
         }
+        return@transaction ApiResponse.Success(response)
     }
 
-    fun getWorksOfPoet(poetName: String): List<Category> = transaction {
-        return@transaction (Cat innerJoin Poet)
+    fun getWorksOfPoet(poetName: String): ApiResponse<List<Category>> = transaction {
+        val response = (Cat innerJoin Poet)
             .slice(Cat.text, Cat.url)
             .select {
                 (Poet.name eq poetName) and (Cat.parentId neq 0)
@@ -36,10 +39,11 @@ class PoetRepository {
                     url = it[Cat.url]
                 )
             }
+        return@transaction ApiResponse.Success(response)
     }
 
-    fun getTop8FamousPoets(): List<FamousPoet> = transaction {
-        return@transaction Poet
+    fun getTop8FamousPoets(): ApiResponse<List<FamousPoet>> = transaction {
+        val response = Poet
             .slice(Poet.id, Poet.name, Poet.description) // Select the fields you need
             .selectAll()
             .limit(8) // Limit the result to 8 poets
@@ -50,21 +54,23 @@ class PoetRepository {
                     description = it[Poet.description]
                 )
             }
+        return@transaction ApiResponse.Success(response)
     }
 
-    fun getPoetImages(poetId: Int): PoetImageResponse {
+    fun getPoetImages(poetId: Int): ApiResponse<PoetImageResponse> {
         val urls = transaction {
             PoetImage.select { PoetImage.poetId eq poetId }.map {
                 it[PoetImage.url]
             }
         }
-        return PoetImageResponse(url = urls)
+        return ApiResponse.Success(PoetImageResponse(url = urls))
     }
 
-    fun getPoetWithImages(poetId: Int): PoetWithImagesResponse? {
+    fun getPoetWithImages(poetId: Int): ApiResponse<PoetWithImagesResponse> {
         return transaction {
             // Fetch the poem
-            val poet = Poet.select { Poet.id eq poetId }.singleOrNull() ?: return@transaction null
+            val poet = Poet.select { Poet.id eq poetId }.singleOrNull()
+                ?: return@transaction ApiResponse.Error(status = HttpStatusCode.NotFound, message = "Poet not found")
 
             // Fetch the poet's images
             val images = PoetImage.select { PoetImage.poetId eq poet[Poet.id] }.map { it[PoetImage.url] }
@@ -74,11 +80,13 @@ class PoetRepository {
                 ?: "Unknown Poet"
 
             // Construct the response
-            PoetWithImagesResponse(
-                poetId = poet[Poet.id],
-                poetName = poetName,
-                description = poet[Poet.description],
-                images = images
+            ApiResponse.Success(
+                PoetWithImagesResponse(
+                    poetId = poet[Poet.id],
+                    poetName = poetName,
+                    description = poet[Poet.description],
+                    images = images
+                )
             )
         }
     }

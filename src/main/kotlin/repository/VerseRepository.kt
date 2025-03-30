@@ -1,5 +1,7 @@
 package mobin.shabanifar.repository
 
+import io.ktor.http.*
+import mobin.shabanifar.models.ApiResponse
 import mobin.shabanifar.models.Cat
 import mobin.shabanifar.models.common.PaginatedResponse
 import mobin.shabanifar.models.poem.Poem
@@ -11,33 +13,35 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 class VerseRepository {
-    fun getVersesOfPoem(poetName: String, categoryName: String, poemTitle: String): List<VerseOfPoem> = transaction {
-        // Step 1: Find the poem_id of the specified poem
-        val poemId = (Poem innerJoin Cat innerJoin Poet)
-            .slice(Poem.id)
-            .select {
-                (Poet.name eq poetName) and
-                        (Cat.text eq categoryName) and
-                        (Poem.title eq poemTitle)
-            }
-            .singleOrNull()?.get(Poem.id)
-            ?: return@transaction Collections.emptyList() // Return an empty list if the poem is not found
+    fun getVersesOfPoem(poetName: String, categoryName: String, poemTitle: String): ApiResponse<List<VerseOfPoem>> =
+        transaction {
+            // Step 1: Find the poem_id of the specified poem
+            val poemId = (Poem innerJoin Cat innerJoin Poet)
+                .slice(Poem.id)
+                .select {
+                    (Poet.name eq poetName) and
+                            (Cat.text eq categoryName) and
+                            (Poem.title eq poemTitle)
+                }
+                .singleOrNull()?.get(Poem.id)
+                ?: return@transaction ApiResponse.Success(Collections.emptyList()) // Return an empty list if the poem is not found
 
-        // Step 2: Fetch the verses of the specified poem
-        return@transaction Verse
-            .select { Verse.poemId eq poemId }
-            .orderBy(Verse.vorder)
-            .map {
-                VerseOfPoem(
-                    poemId = it[Verse.poemId],
-                    vorder = it[Verse.vorder],
-                    position = it[Verse.position],
-                    text = it[Verse.text]
-                )
-            }
-    }
+            // Step 2: Fetch the verses of the specified poem
+            val response = Verse
+                .select { Verse.poemId eq poemId }
+                .orderBy(Verse.vorder)
+                .map {
+                    VerseOfPoem(
+                        poemId = it[Verse.poemId],
+                        vorder = it[Verse.vorder],
+                        position = it[Verse.position],
+                        text = it[Verse.text]
+                    )
+                }
+            return@transaction ApiResponse.Success(response)
+        }
 
-    fun getRandomVerse(): RandomVerse = transaction {
+    fun getRandomVerse(): ApiResponse<RandomVerse> = transaction {
         // Step 1: Select a random verse with position 0
         val firstVerse = Verse
             .slice(Verse.text, Verse.poemId, Verse.vorder)
@@ -50,9 +54,10 @@ class VerseRepository {
                     it[Verse.poemId],
                     it[Verse.vorder]
                 )
-            }.firstOrNull() ?: throw IllegalStateException("No verse found in the database.")
-
-
+            }.firstOrNull() ?: return@transaction ApiResponse.Error(
+            status = HttpStatusCode.NotFound,
+            message = "No verse found in the database."
+        )
 
         val (firstVerseText, poemId, firstVerseVorder) = firstVerse
 
@@ -64,7 +69,10 @@ class VerseRepository {
                         (Verse.vorder eq firstVerseVorder + 1) // Next Vorder
             }
             .map { it[Verse.text] ?: "" }
-            .firstOrNull() ?: throw IllegalStateException("No matching verse found for poem ID $poemId.")
+            .firstOrNull() ?: return@transaction ApiResponse.Error(
+            status = HttpStatusCode.NotFound,
+            message = "No matching verse found for poem ID $poemId."
+        )
 
         // Step 3: Fetch the poem and poet details
         val poemWithPoet = (Poem innerJoin Cat innerJoin Poet)
@@ -76,20 +84,22 @@ class VerseRepository {
                     it[Poet.name],
                     it[Poet.id]
                 )
-            }.firstOrNull() ?: throw IllegalStateException("No poem or poet found for poem ID $poemId.")
-
-
+            }.firstOrNull() ?: return@transaction ApiResponse.Error(
+            status = HttpStatusCode.NotFound,
+            message = "No poem or poet found for poem ID $poemId."
+        )
 
         val (poemTitle, poetName, poetId) = poemWithPoet
 
         // Step 4: Return the result in the RandomVerse data class
-        return@transaction RandomVerse(
+        val response = RandomVerse(
             verses = listOf(firstVerseText, secondVerseText),
             poemId = poemId,
             poemTitle = poemTitle,
             poetName = poetName,
             poetId = poetId
         )
+        return@transaction ApiResponse.Success(response)
     }
 
     fun advancedVerseSearch(
@@ -99,7 +109,7 @@ class VerseRepository {
         excludePoetName: String? = null, // Optional: Exclude a specific poet
         page: Int = 1, // Default to page 1
         pageSize: Int = 10 // Default to 10 items per page
-    ): PaginatedResponse<AdvancedVerseSearchResponse> = transaction {
+    ): ApiResponse<PaginatedResponse<AdvancedVerseSearchResponse>> = transaction {
         // Step 1: Find verses that match the given text and optional filters
         val verseQuery = Verse
             .innerJoin(Poem).innerJoin(Cat).innerJoin(Poet)
@@ -129,7 +139,7 @@ class VerseRepository {
 
         // If no verses match, return an empty response
         if (paginatedVerses.isEmpty()) {
-            return@transaction PaginatedResponse(Collections.emptyList(), totalCount)
+            return@transaction ApiResponse.Success(PaginatedResponse(Collections.emptyList(), totalCount))
         }
 
         // Step 4: Fetch the previous and next verses for each matched verse
@@ -167,7 +177,7 @@ class VerseRepository {
         }
 
         // Step 6: Return the paginated response
-        return@transaction PaginatedResponse(results, totalCount)
+        return@transaction ApiResponse.Success(PaginatedResponse(results, totalCount))
     }
 
 }

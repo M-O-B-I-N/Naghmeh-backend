@@ -1,5 +1,6 @@
 package mobin.shabanifar.service
 
+import mobin.shabanifar.models.ApiResponse
 import mobin.shabanifar.models.common.PaginatedResponse
 import mobin.shabanifar.models.verse.AdvancedVerseSearchResponse
 import mobin.shabanifar.models.verse.RandomVerse
@@ -15,7 +16,7 @@ class VerseService(private val repository: VerseRepository) {
         excludePoetName: String?,
         page: Int,
         pageSize: Int
-    ): PaginatedResponse<AdvancedVerseSearchResponse> {
+    ): ApiResponse<PaginatedResponse<AdvancedVerseSearchResponse>> {
         return repository.advancedVerseSearch(
             verseText = verseText,
             poetName = poetName,
@@ -26,11 +27,11 @@ class VerseService(private val repository: VerseRepository) {
         )
     }
 
-    fun getRandomVerse(): RandomVerse {
+    fun getRandomVerse(): ApiResponse<RandomVerse> {
         return repository.getRandomVerse()
     }
 
-    fun getVersesOfPoem(poetName: String, categoryName: String, poemTitle: String): List<VerseOfPoem> {
+    fun getVersesOfPoem(poetName: String, categoryName: String, poemTitle: String): ApiResponse<List<VerseOfPoem>> {
         return repository.getVersesOfPoem(
             poetName = poetName,
             categoryName = categoryName,
