@@ -19,5 +19,4 @@ class PoemService(private val repository: PoemRepository) {
             pageSize = pageSize
         )
     }
-
 }

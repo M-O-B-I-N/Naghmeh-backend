@@ -1,9 +1,12 @@
 package mobin.shabanifar.service
 
 import mobin.shabanifar.models.ApiResponse
-import mobin.shabanifar.models.poet.*
+import mobin.shabanifar.models.poet.Category
+import mobin.shabanifar.models.poet.FamousPoet
+import mobin.shabanifar.models.poet.PoetImageResponse
+import mobin.shabanifar.models.poet.PoetWithBirthYear
+import mobin.shabanifar.models.poet.PoetWithImagesResponse
 import mobin.shabanifar.repository.PoetRepository
-
 
 class PoetService(private val poetRepository: PoetRepository) {
 
@@ -26,5 +29,4 @@ class PoetService(private val poetRepository: PoetRepository) {
     fun getPoetImages(poetId: Int): ApiResponse<PoetImageResponse> {
         return poetRepository.getPoetImages(poetId)
     }
-
 }

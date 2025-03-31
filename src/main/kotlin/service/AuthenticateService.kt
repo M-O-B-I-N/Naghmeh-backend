@@ -10,5 +10,4 @@ class AuthenticateService(private val repository: AuthenticateRepository) {
     fun authenticateUser(authenticateRequest: AuthenticateRequest): ApiResponse<AuthenticateResponse> {
         return repository.authenticateUser(authenticateRequest)
     }
-
 }

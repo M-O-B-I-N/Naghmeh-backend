@@ -1,7 +1,11 @@
+import io.gitlab.arturbosch.detekt.Detekt
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
 }
 
 group = "mobin.shabanifar"
@@ -13,9 +17,23 @@ application {
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
-
 repositories {
     mavenCentral()
+}
+ktlint {
+    android.set(false)
+    ignoreFailures.set(false)
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    autoCorrect = true
+    config.setFrom(files("config/detekt.yml")) // Optional custom rules
+}
+
+tasks.withType<Detekt>() {
+    jvmTarget = JvmTarget.JVM_17.target
 }
 
 dependencies {
@@ -37,7 +55,7 @@ dependencies {
     implementation(libs.apache)
     implementation(libs.translate)
 
-    //Auth
+    // Auth
     implementation(libs.h2database)
     implementation(libs.ktor.auth.jwt)
     implementation(libs.ktor.auth)

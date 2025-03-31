@@ -1,9 +1,12 @@
 package mobin.shabanifar.routes
 
-import io.ktor.http.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
 import mobin.shabanifar.models.ApiResponse
 import mobin.shabanifar.models.respondApi
+import mobin.shabanifar.models.verse.AdvancedVerseSearchRequest
 import mobin.shabanifar.service.VerseService
 
 fun Route.verseRoutes(service: VerseService) {
@@ -48,8 +51,16 @@ fun Route.verseRoutes(service: VerseService) {
                 }
 
                 // Perform the advanced search
-                val result =
-                    service.advancedVerseSearch(verseText, poetName, categoryName, excludePoetName, page, pageSize)
+                val result = service.advancedVerseSearch(
+                    request = AdvancedVerseSearchRequest(
+                        verseText = verseText,
+                        poetName = poetName,
+                        categoryName = categoryName,
+                        excludePoetName = excludePoetName,
+                        page = page,
+                        pageSize = pageSize
+                    )
+                )
 
                 // Respond with the result
                 call.respondApi(result)

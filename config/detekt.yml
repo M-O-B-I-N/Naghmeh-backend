@@ -1,0 +1,31 @@
+build:
+  maxIssues: 10
+  excludeCorrectable: false
+
+config:
+  validation: true
+
+complexity:
+  LongMethod:
+    active: true
+    threshold: 100
+
+  LargeClass:
+    active: true
+    threshold: 200
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
+
+naming:
+  InvalidPackageDeclaration:
+    active: false
+
+style:
+  WildcardImport:
+    active: true
+  UnusedImports:
+    active: true
+  MagicNumber:
+    active: false

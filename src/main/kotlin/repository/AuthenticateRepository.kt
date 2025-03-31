@@ -3,8 +3,8 @@ package mobin.shabanifar.repository
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.typesafe.config.ConfigFactory
-import io.ktor.http.*
-import io.ktor.server.config.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.config.HoconApplicationConfig
 import mobin.shabanifar.models.ApiResponse
 import mobin.shabanifar.models.user.AuthenticateRequest
 import mobin.shabanifar.models.user.AuthenticateResponse
@@ -20,7 +20,6 @@ class AuthenticateRepository {
     val jwtAudience = config.property("ktor.jwt.audience").getString()
     val jwtIssuer = config.property("ktor.jwt.issuer").getString()
     val jwtRealm = config.property("ktor.jwt.realm").getString()
-
 
     fun authenticateUser(authenticateRequest: AuthenticateRequest): ApiResponse<AuthenticateResponse> {
         val user = transaction {
@@ -43,9 +42,7 @@ class AuthenticateRepository {
                 .withClaim("email", authenticateRequest.email)
                 .sign(Algorithm.HMAC256(jwtSecret))
             return ApiResponse.Success(status = HttpStatusCode.Created, data = AuthenticateResponse(token))
-
         } else {
-
             // Login: Validate password
             return if (BCrypt.checkpw(authenticateRequest.password, user[User.password])) {
                 val token = JWT.create()
@@ -59,5 +56,4 @@ class AuthenticateRepository {
             }
         }
     }
-
 }
