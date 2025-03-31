@@ -1,7 +1,7 @@
 package mobin.shabanifar.models
 
 import mobin.shabanifar.models.poet.Poet
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Table
 
 object Cat : Table("cat") {
     val id = integer("id").autoIncrement()

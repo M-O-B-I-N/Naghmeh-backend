@@ -1,14 +1,15 @@
 package mobin.shabanifar.routes
 
-import io.ktor.http.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
 import mobin.shabanifar.models.ApiResponse
 import mobin.shabanifar.models.respondApi
 import mobin.shabanifar.service.PoetService
 
 fun Route.poetRoutes(poetService: PoetService) {
     route("/api/poet") {
-
         get("/getPoetsByCentury") {
             try {
                 // Extract query parameter

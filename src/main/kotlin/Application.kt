@@ -3,27 +3,43 @@ package mobin.shabanifar
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.typesafe.config.ConfigFactory
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
-import io.ktor.server.config.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.plugins.statuspages.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.jwt.jwt
+import io.ktor.server.config.HoconApplicationConfig
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.routing.routing
+import mobin.shabanifar.models.ApiResponse
 import mobin.shabanifar.models.Cat
 import mobin.shabanifar.models.favorite.Favorite
 import mobin.shabanifar.models.poem.Poem
 import mobin.shabanifar.models.poet.Poet
 import mobin.shabanifar.models.poet.PoetImage
+import mobin.shabanifar.models.respondApi
 import mobin.shabanifar.models.user.User
 import mobin.shabanifar.models.verse.Verse
 import mobin.shabanifar.plugins.configureSerialization
-import mobin.shabanifar.repository.*
-import mobin.shabanifar.routes.*
-import mobin.shabanifar.service.*
+import mobin.shabanifar.repository.AuthenticateRepository
+import mobin.shabanifar.repository.FavoriteRepository
+import mobin.shabanifar.repository.PoemRepository
+import mobin.shabanifar.repository.PoetRepository
+import mobin.shabanifar.repository.VerseRepository
+import mobin.shabanifar.routes.authenticateRoutes
+import mobin.shabanifar.routes.favoriteRoutes
+import mobin.shabanifar.routes.poemRoutes
+import mobin.shabanifar.routes.poetRoutes
+import mobin.shabanifar.routes.verseRoutes
+import mobin.shabanifar.service.AuthenticateService
+import mobin.shabanifar.service.FavoriteService
+import mobin.shabanifar.service.PoemService
+import mobin.shabanifar.service.PoetService
+import mobin.shabanifar.service.VerseService
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -70,7 +86,6 @@ fun initDatabase() {
     }
 }
 
-
 fun Application.configureSecurity() {
     val config = HoconApplicationConfig(ConfigFactory.load())
     val jwtSecret = config.property("ktor.jwt.secret").getString()
@@ -102,7 +117,12 @@ fun Application.configureStatusPages() {
     install(StatusPages) {
         // Handle exceptions
         exception<Throwable> { call, cause ->
-            call.respond(HttpStatusCode.InternalServerError, "Internal Server Error: ${cause.message}")
+            call.respondApi(
+                ApiResponse.Error<Unit>(
+                    status = HttpStatusCode.InternalServerError,
+                    message = "Internal Server Error: ${cause.message}"
+                )
+            )
         }
     }
 }

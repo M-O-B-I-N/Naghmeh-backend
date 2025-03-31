@@ -1,6 +1,6 @@
 package mobin.shabanifar.service
 
-import io.ktor.http.*
+import io.ktor.http.HttpStatusCode
 import mobin.shabanifar.repository.FavoriteRepository
 import mobin.shabanifar.utils.CustomException
 

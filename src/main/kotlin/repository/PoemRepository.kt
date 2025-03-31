@@ -9,7 +9,7 @@ import mobin.shabanifar.models.poet.Poet
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.*
+import java.util.Collections
 
 class PoemRepository {
     fun getPoemsOfCategory(
@@ -46,5 +46,4 @@ class PoemRepository {
 
         return@transaction ApiResponse.Success(PaginatedResponse(results, totalCount))
     }
-
 }

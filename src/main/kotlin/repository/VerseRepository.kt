@@ -1,16 +1,24 @@
 package mobin.shabanifar.repository
 
-import io.ktor.http.*
+import io.ktor.http.HttpStatusCode
 import mobin.shabanifar.models.ApiResponse
 import mobin.shabanifar.models.Cat
 import mobin.shabanifar.models.common.PaginatedResponse
 import mobin.shabanifar.models.poem.Poem
 import mobin.shabanifar.models.poet.Poet
-import mobin.shabanifar.models.verse.*
-import org.jetbrains.exposed.sql.*
+import mobin.shabanifar.models.verse.AdvancedVerseSearchRequest
+import mobin.shabanifar.models.verse.AdvancedVerseSearchResponse
+import mobin.shabanifar.models.verse.RandomVerse
+import mobin.shabanifar.models.verse.Verse
+import mobin.shabanifar.models.verse.VerseOfPoem
+import mobin.shabanifar.models.verse.VerseWithContext
+import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Random
+import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.*
+import java.util.Collections
 
 class VerseRepository {
     fun getVersesOfPoem(poetName: String, categoryName: String, poemTitle: String): ApiResponse<List<VerseOfPoem>> =
@@ -20,11 +28,11 @@ class VerseRepository {
                 .slice(Poem.id)
                 .select {
                     (Poet.name eq poetName) and
-                            (Cat.text eq categoryName) and
-                            (Poem.title eq poemTitle)
+                        (Cat.text eq categoryName) and
+                        (Poem.title eq poemTitle)
                 }
                 .singleOrNull()?.get(Poem.id)
-                ?: return@transaction ApiResponse.Success(Collections.emptyList()) // Return an empty list if the poem is not found
+                ?: return@transaction ApiResponse.Success(Collections.emptyList())
 
             // Step 2: Fetch the verses of the specified poem
             val response = Verse
@@ -66,7 +74,7 @@ class VerseRepository {
             .slice(Verse.text)
             .select {
                 (Verse.poemId eq poemId) and
-                        (Verse.vorder eq firstVerseVorder + 1) // Next Vorder
+                    (Verse.vorder eq firstVerseVorder + 1) // Next Vorder
             }
             .map { it[Verse.text] ?: "" }
             .firstOrNull() ?: return@transaction ApiResponse.Error(
@@ -103,12 +111,7 @@ class VerseRepository {
     }
 
     fun advancedVerseSearch(
-        verseText: String,
-        poetName: String? = null, // Optional: Filter by poet name
-        categoryName: String? = null, // Optional: Filter by category name
-        excludePoetName: String? = null, // Optional: Exclude a specific poet
-        page: Int = 1, // Default to page 1
-        pageSize: Int = 10 // Default to 10 items per page
+        request: AdvancedVerseSearchRequest
     ): ApiResponse<PaginatedResponse<AdvancedVerseSearchResponse>> = transaction {
         // Step 1: Find verses that match the given text and optional filters
         val verseQuery = Verse
@@ -122,10 +125,10 @@ class VerseRepository {
                 Poem.title
             )
             .select {
-                Verse.text like "%$verseText%" and
-                        (poetName?.let { Poet.name eq it } ?: Op.TRUE) and // Filter by poet name
-                        (categoryName?.let { Cat.text eq it } ?: Op.TRUE) and // Filter by category name
-                        (excludePoetName?.let { Poet.name neq it } ?: Op.TRUE) // Exclude poet if provided
+                Verse.text like "%${request.verseText}%" and
+                    (request.poetName?.let { Poet.name eq it } ?: Op.TRUE) and // Filter by poet name
+                    (request.categoryName?.let { Cat.text eq it } ?: Op.TRUE) and // Filter by category name
+                    (request.excludePoetName?.let { Poet.name neq it } ?: Op.TRUE) // Exclude poet if provided
             }
             .orderBy(Verse.poemId to SortOrder.ASC, Verse.vorder to SortOrder.ASC)
 
@@ -134,7 +137,7 @@ class VerseRepository {
 
         // Step 3: Apply pagination
         val paginatedVerses = verseQuery
-            .limit(pageSize, offset = ((page - 1) * pageSize).toLong())
+            .limit(request.pageSize, offset = ((request.page - 1) * request.pageSize).toLong())
             .toList()
 
         // If no verses match, return an empty response
@@ -179,5 +182,4 @@ class VerseRepository {
         // Step 6: Return the paginated response
         return@transaction ApiResponse.Success(PaginatedResponse(results, totalCount))
     }
-
 }
